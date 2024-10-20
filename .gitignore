@@ -1,24 +1,55 @@
-# Compiled class file
-*.class
+import java.util.Scanner;
 
-# Log file
-*.log
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
 
-# BlueJ files
-*.ctxt
+        // Введення даних користувачем
+        System.out.println("Введіть ціле число:");
+        int integerValue = scanner.nextInt();
 
-# Mobile Tools for Java (J2ME)
-.mtj.tmp/
+        System.out.println("Введіть число з плаваючою точкою:");
+        double doubleValue = scanner.nextDouble();
+        scanner.nextLine(); // Очищення буферу після введення double
 
-# Package Files #
-*.jar
-*.war
-*.nar
-*.ear
-*.zip
-*.tar.gz
-*.rar
+        System.out.println("Введіть строку:");
+        String stringValue = scanner.nextLine();
 
-# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
-hs_err_pid*
-replay_pid*
+        System.out.println("Введіть логічне значення (true/false):");
+        boolean booleanValue = scanner.nextBoolean();
+
+        // Виведення даних у різних форматах
+        // Підхід 1: Конкатенація рядків
+        System.out.println("1. Конкатенація: " + integerValue + " " + doubleValue + " " + stringValue + " " + booleanValue);
+
+        // Підхід 2: System.out.printf()
+        System.out.printf("2. Використання printf: ціле = %d, дробове = %.2f, строка = %s, логічне = %b%n", 
+                          integerValue, doubleValue, stringValue, booleanValue);
+
+        // Підхід 3: Форматування через String.format()
+        String formattedString = String.format("3. String.format(): ціле = %d, дробове = %.3f, строка = '%s', логічне = %b",
+                                               integerValue, doubleValue, stringValue, booleanValue);
+        System.out.println(formattedString);
+
+        // Виведення даних у шістнадцятковому форматі
+        System.out.printf("4. Шістнадцятковий формат: %x%n", integerValue);
+
+        // Виведення даних у вісімковому форматі
+        System.out.printf("5. Вісімковий формат: %o%n", integerValue);
+
+        // Виведення дробового числа з різною кількістю знаків після коми
+        System.out.printf("6. Дробове число з 4 знаками після коми: %.4f%n", doubleValue);
+
+        // Виведення рядка з фіксованою шириною поля
+        System.out.printf("7. Строка з фіксованою шириною (15 символів): '%-15s'%n", stringValue);
+
+        // Логічне значення у верхньому регістрі
+        System.out.printf("8. Логічне значення у верхньому регістрі: %B%n", booleanValue);
+
+        // Виведення цілих чисел з провідними нулями
+        System.out.printf("9. Ціле число з провідними нулями (8 цифр): %08d%n", integerValue);
+
+        // Виведення рядка з обмеженою кількістю символів
+        System.out.printf("10. Перші 5 символів рядка: %.5s%n", stringValue);
+    }
+}
