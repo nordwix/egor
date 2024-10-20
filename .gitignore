@@ -3,53 +3,30 @@ import java.util.Scanner;
 public class Main {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
+        System.out.print("Введіть ціле число: ");
+        int integerInput = scanner.nextInt();
 
-        // Введення даних користувачем
-        System.out.println("Введіть ціле число:");
-        int integerValue = scanner.nextInt();
+        System.out.print("Введіть число з плаваючою точкою: ");
+        double DoubleInput = scanner.nextDouble();
 
-        System.out.println("Введіть число з плаваючою точкою:");
-        double doubleValue = scanner.nextDouble();
-        scanner.nextLine(); // Очищення буферу після введення double
+        System.out.print("Введіть строку: ");
+        scanner.nextLine();
+        String stringInput = scanner.nextLine();
 
-        System.out.println("Введіть строку:");
-        String stringValue = scanner.nextLine();
+        System.out.print("Введіть логічне значення (true або false): ");
+        boolean boolInput = scanner.nextBoolean();
+        System.out.printf("Ціле число: %d%n", integerInput);
+        System.out.printf("Число з плаваючою точкою: %.2f%n", DoubleInput);
+        System.out.printf("Строка: %s%n", stringInput);
+        System.out.printf("Логічне значення: %b%n", boolInput);
+        System.out.println(String.format("Ціле число: %d", integerInput));
+        System.out.println(String.format("Число з плаваючою точкою: %.2f", DoubleInput));
+        System.out.println(String.format("Строка: %s", stringInput));
+        System.out.println(String.format("Логічне значення: %b", boolInput));
+        System.out.println("Ціле число: " + integerInput);
+        System.out.println("Число з плаваючою точкою: " + DoubleInput);
+        System.out.println("Строка: " + stringInput);
+        System.out.println("Логічне значення: " + boolInput);
 
-        System.out.println("Введіть логічне значення (true/false):");
-        boolean booleanValue = scanner.nextBoolean();
-
-        // Виведення даних у різних форматах
-        // Підхід 1: Конкатенація рядків
-        System.out.println("1. Конкатенація: " + integerValue + " " + doubleValue + " " + stringValue + " " + booleanValue);
-
-        // Підхід 2: System.out.printf()
-        System.out.printf("2. Використання printf: ціле = %d, дробове = %.2f, строка = %s, логічне = %b%n", 
-                          integerValue, doubleValue, stringValue, booleanValue);
-
-        // Підхід 3: Форматування через String.format()
-        String formattedString = String.format("3. String.format(): ціле = %d, дробове = %.3f, строка = '%s', логічне = %b",
-                                               integerValue, doubleValue, stringValue, booleanValue);
-        System.out.println(formattedString);
-
-        // Виведення даних у шістнадцятковому форматі
-        System.out.printf("4. Шістнадцятковий формат: %x%n", integerValue);
-
-        // Виведення даних у вісімковому форматі
-        System.out.printf("5. Вісімковий формат: %o%n", integerValue);
-
-        // Виведення дробового числа з різною кількістю знаків після коми
-        System.out.printf("6. Дробове число з 4 знаками після коми: %.4f%n", doubleValue);
-
-        // Виведення рядка з фіксованою шириною поля
-        System.out.printf("7. Строка з фіксованою шириною (15 символів): '%-15s'%n", stringValue);
-
-        // Логічне значення у верхньому регістрі
-        System.out.printf("8. Логічне значення у верхньому регістрі: %B%n", booleanValue);
-
-        // Виведення цілих чисел з провідними нулями
-        System.out.printf("9. Ціле число з провідними нулями (8 цифр): %08d%n", integerValue);
-
-        // Виведення рядка з обмеженою кількістю символів
-        System.out.printf("10. Перші 5 символів рядка: %.5s%n", stringValue);
     }
 }
