@@ -1,32 +1,60 @@
 import java.util.Scanner;
 
-public class Main {
+public class StringProcessor {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        System.out.print("Введіть ціле число: ");
-        int integerInput = scanner.nextInt();
+        String userInput = getValidInput(scanner);
+        
+        System.out.println("Оберіть операцію:");
+        System.out.println("1 - Перевернути всю строку");
+        System.out.println("2 - Перевернути кожне слово у строці");
+        int choice = scanner.nextInt();
+        scanner.nextLine(); 
+        
+        if (choice == 1) {
+            System.out.println("Результат: " + reverseString(userInput));
+        } else if (choice == 2) {
+            System.out.println("Результат: " + reverseEachWord(userInput));
+        } else {
+            System.out.println("Невірний вибір.");
+        }
+    }
 
-        System.out.print("Введіть число з плаваючою точкою: ");
-        double DoubleInput = scanner.nextDouble();
-
-        System.out.print("Введіть строку: ");
-        scanner.nextLine();
-        String stringInput = scanner.nextLine();
-
-        System.out.print("Введіть логічне значення (true або false): ");
-        boolean boolInput = scanner.nextBoolean();
-        System.out.printf("Ціле число: %d%n", integerInput);
-        System.out.printf("Число з плаваючою точкою: %.2f%n", DoubleInput);
-        System.out.printf("Строка: %s%n", stringInput);
-        System.out.printf("Логічне значення: %b%n", boolInput);
-        System.out.println(String.format("Ціле число: %d", integerInput));
-        System.out.println(String.format("Число з плаваючою точкою: %.2f", DoubleInput));
-        System.out.println(String.format("Строка: %s", stringInput));
-        System.out.println(String.format("Логічне значення: %b", boolInput));
-        System.out.println("Ціле число: " + integerInput);
-        System.out.println("Число з плаваючою точкою: " + DoubleInput);
-        System.out.println("Строка: " + stringInput);
-        System.out.println("Логічне значення: " + boolInput);
-
+    public static String getValidInput(Scanner scanner) {
+        String input;
+        while (true) {
+            System.out.print("Введіть строку: ");
+            input = scanner.nextLine().trim();
+            
+            String[] words = input.split("\\s+");
+            boolean valid = words.length >= 2;
+            
+            for (String word : words) {
+                if (word.length() < 3) {
+                    valid = false;
+                    break;
+                }
+            }
+            
+            if (valid) {
+                return input;
+            }
+            System.out.println("Строка має містити хоча б 2 слова по 3 символи кожне. Спробуйте ще раз.");
+        }
+    }
+    
+    public static String reverseString(String input) {
+        return new StringBuilder(input).reverse().toString();
+    }
+    
+    public static String reverseEachWord(String input) {
+        String[] words = input.split(" ");
+        StringBuilder result = new StringBuilder();
+        
+        for (String word : words) {
+            result.append(new StringBuilder(word).reverse()).append(" ");
+        }
+        
+        return result.toString().trim();
     }
 }
