@@ -1,60 +1,89 @@
-import java.util.Scanner;
+import re
 
-public class StringProcessor {
-    public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
-        String userInput = getValidInput(scanner);
-        
-        System.out.println("Оберіть операцію:");
-        System.out.println("1 - Перевернути всю строку");
-        System.out.println("2 - Перевернути кожне слово у строці");
-        int choice = scanner.nextInt();
-        scanner.nextLine(); 
-        
-        if (choice == 1) {
-            System.out.println("Результат: " + reverseString(userInput));
-        } else if (choice == 2) {
-            System.out.println("Результат: " + reverseEachWord(userInput));
-        } else {
-            System.out.println("Невірний вибір.");
-        }
-    }
+class UserRegistrationError(Exception):
+    pass
 
-    public static String getValidInput(Scanner scanner) {
-        String input;
-        while (true) {
-            System.out.print("Введіть строку: ");
-            input = scanner.nextLine().trim();
-            
-            String[] words = input.split("\\s+");
-            boolean valid = words.length >= 2;
-            
-            for (String word : words) {
-                if (word.length() < 3) {
-                    valid = false;
-                    break;
-                }
-            }
-            
-            if (valid) {
-                return input;
-            }
-            System.out.println("Строка має містити хоча б 2 слова по 3 символи кожне. Спробуйте ще раз.");
-        }
-    }
+class UserNotFoundError(Exception):
+    pass
+
+class MaxUsersError(Exception):
+    pass
+
+class AuthenticationError(Exception):
+    pass
+
+class UserManager:
+    MAX_USERS = 15
+    FORBIDDEN_PASSWORDS = {"admin", "pass", "password", "qwerty", "ytrewq"}
     
-    public static String reverseString(String input) {
-        return new StringBuilder(input).reverse().toString();
-    }
+    def __init__(self):
+        self.users = {}
     
-    public static String reverseEachWord(String input) {
-        String[] words = input.split(" ");
-        StringBuilder result = new StringBuilder();
+    def validate_username(self, username):
+        if len(username) < 5 or " " in username:
+            raise UserRegistrationError("Ім'я користувача має бути не менше 5 символів і не містити пробілів.")
+    
+    def validate_password(self, password):
+        if len(password) < 10:
+            raise UserRegistrationError("Пароль має бути не менше 10 символів.")
+        if " " in password:
+            raise UserRegistrationError("Пароль не має містити пробілів.")
+        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
+            raise UserRegistrationError("Пароль має містити хоча б один спеціальний символ.")
+        if len(re.findall(r'\d', password)) < 3:
+            raise UserRegistrationError("Пароль має містити хоча б три цифри.")
+        if any(word in password.lower() for word in self.FORBIDDEN_PASSWORDS):
+            raise UserRegistrationError("Пароль містить заборонене слово.")
+    
+    def add_user(self, username, password):
+        if len(self.users) >= self.MAX_USERS:
+            raise MaxUsersError("Досягнуто максимальну кількість користувачів.")
+        self.validate_username(username)
+        self.validate_password(password)
+        self.users[username] = password
+        print(f"Користувача {username} додано.")
+    
+    def remove_user(self, username):
+        if username not in self.users:
+            raise UserNotFoundError("Користувача не знайдено.")
+        del self.users[username]
+        print(f"Користувача {username} видалено.")
+    
+    def authenticate(self, username, password):
+        if username not in self.users or self.users[username] != password:
+            raise AuthenticationError("Невірне ім'я користувача або пароль.")
+        print(f"Користувач {username} аутентифікований.")
+
+def main():
+    manager = UserManager()
+    
+    while True:
+        print("\nМеню:")
+        print("1 - Додати користувача")
+        print("2 - Видалити користувача")
+        print("3 - Аутентифікувати користувача")
+        print("4 - Вихід")
         
-        for (String word : words) {
-            result.append(new StringBuilder(word).reverse()).append(" ");
-        }
+        choice = input("Оберіть дію: ")
         
-        return result.toString().trim();
-    }
-}
+        try:
+            if choice == "1":
+                username = input("Введіть ім'я користувача: ")
+                password = input("Введіть пароль: ")
+                manager.add_user(username, password)
+            elif choice == "2":
+                username = input("Введіть ім'я користувача: ")
+                manager.remove_user(username)
+            elif choice == "3":
+                username = input("Введіть ім'я користувача: ")
+                password = input("Введіть пароль: ")
+                manager.authenticate(username, password)
+            elif choice == "4":
+                break
+            else:
+                print("Невірний вибір. Спробуйте ще раз.")
+        except (UserRegistrationError, UserNotFoundError, MaxUsersError, AuthenticationError) as e:
+            print(f"Помилка: {e}")
+
+if __name__ == "__main__":
+    main()
