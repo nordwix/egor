@@ -1,89 +1,115 @@
-import re
+import java.util.Scanner;
 
-class UserRegistrationError(Exception):
-    pass
-
-class UserNotFoundError(Exception):
-    pass
-
-class MaxUsersError(Exception):
-    pass
-
-class AuthenticationError(Exception):
-    pass
-
-class UserManager:
-    MAX_USERS = 15
-    FORBIDDEN_PASSWORDS = {"admin", "pass", "password", "qwerty", "ytrewq"}
+public class AuthenticationSystem {
+    private static final int MAX_USERS = 15;
+    private static final String[] forbiddenPasswords = {"admin", "pass", "password", "qwerty", "ytrewq"};
+    private static final String[] bannedPasswords = new String[50];
+    private static String[] usernames = new String[MAX_USERS];
+    private static String[] passwords = new String[MAX_USERS];
+    private static int userCount = 0;
+    private static int bannedCount = 0;
     
-    def __init__(self):
-        self.users = {}
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
+            System.out.println("\n=== Меню ===");
+            System.out.println("1 - Додати користувача");
+            System.out.println("2 - Видалити користувача");
+            System.out.println("3 - Виконати дію від користувача");
+            System.out.println("4 - Вийти");
+            System.out.print("Виберіть дію: ");
+            int choice = scanner.nextInt();
+            scanner.nextLine(); 
+            switch (choice) {
+                case 1 -> registerUser(scanner);
+                case 2 -> deleteUser(scanner);
+                case 3 -> authenticateUser(scanner);
+                case 4 -> {
+                    System.out.println("Вихід із програми...");
+                    scanner.close();
+                    return;
+                }
+                default -> System.out.println("Невірний вибір. Спробуйте ще раз.");
+            }
+        }
+    }
     
-    def validate_username(self, username):
-        if len(username) < 5 or " " in username:
-            raise UserRegistrationError("Ім'я користувача має бути не менше 5 символів і не містити пробілів.")
+    private static void registerUser(Scanner scanner) {
+        if (userCount == MAX_USERS) {
+            System.out.println("Помилка: максимальна кількість користувачів досягнута.");
+            return;
+        }
+        System.out.print("Введіть ім'я користувача (мінімум 3 символи, без пробілів): ");
+        String username = scanner.nextLine();
+        if (username.length() < 3 || username.contains(" ")) {
+            System.out.println("Помилка: ім'я користувача має містити мінімум 3 символи та не мати пробілів.");
+            return;
+        }
+        for (String existingUsername : usernames) {
+            if (username.equals(existingUsername)) {
+                System.out.println("Помилка: таке ім'я користувача вже існує.");
+                return;
+            }
+        }
+        System.out.print("Введіть пароль (мінімум 10 символів, латиниця, спецсимволи, цифри, без пробілів): ");
+        String password = scanner.nextLine();
+        if (!isValidPassword(password)) {
+            System.out.println("Помилка: невірний формат пароля.");
+            return;
+        }
+        usernames[userCount] = username;
+        passwords[userCount] = password;
+        userCount++;
+        System.out.println("Користувач успішно доданий.");
+    }
     
-    def validate_password(self, password):
-        if len(password) < 10:
-            raise UserRegistrationError("Пароль має бути не менше 10 символів.")
-        if " " in password:
-            raise UserRegistrationError("Пароль не має містити пробілів.")
-        if not re.search(r'[!@#$%^&*(),.?":{}|<>]', password):
-            raise UserRegistrationError("Пароль має містити хоча б один спеціальний символ.")
-        if len(re.findall(r'\d', password)) < 3:
-            raise UserRegistrationError("Пароль має містити хоча б три цифри.")
-        if any(word in password.lower() for word in self.FORBIDDEN_PASSWORDS):
-            raise UserRegistrationError("Пароль містить заборонене слово.")
+    private static boolean isValidPassword(String password) {
+        if (password.length() < 10 || password.contains(" ")) return false;
+        boolean hasSpecial = false, hasDigit = false;
+        int digitCount = 0;
+        for (char c : password.toCharArray()) {
+            if (Character.isLetterOrDigit(c)) {
+                if (Character.isDigit(c)) digitCount++;
+            } else hasSpecial = true;
+        }
+        if (!hasSpecial || digitCount < 3) return false;
+        for (String forbidden : forbiddenPasswords) {
+            if (password.toLowerCase().contains(forbidden)) return false;
+        }
+        for (String banned : bannedPasswords) {
+            if (banned != null && password.equals(banned)) return false;
+        }
+        return true;
+    }
     
-    def add_user(self, username, password):
-        if len(self.users) >= self.MAX_USERS:
-            raise MaxUsersError("Досягнуто максимальну кількість користувачів.")
-        self.validate_username(username)
-        self.validate_password(password)
-        self.users[username] = password
-        print(f"Користувача {username} додано.")
+    private static void deleteUser(Scanner scanner) {
+        System.out.print("Введіть ім'я користувача для видалення: ");
+        String username = scanner.nextLine();
+        for (int i = 0; i < userCount; i++) {
+            if (usernames[i].equals(username)) {
+                usernames[i] = usernames[userCount - 1];
+                passwords[i] = passwords[userCount - 1];
+                usernames[userCount - 1] = null;
+                passwords[userCount - 1] = null;
+                userCount--;
+                System.out.println("Користувач успішно видалений.");
+                return;
+            }
+        }
+        System.out.println("Помилка: користувача з таким ім'ям не знайдено.");
+    }
     
-    def remove_user(self, username):
-        if username not in self.users:
-            raise UserNotFoundError("Користувача не знайдено.")
-        del self.users[username]
-        print(f"Користувача {username} видалено.")
-    
-    def authenticate(self, username, password):
-        if username not in self.users or self.users[username] != password:
-            raise AuthenticationError("Невірне ім'я користувача або пароль.")
-        print(f"Користувач {username} аутентифікований.")
-
-def main():
-    manager = UserManager()
-    
-    while True:
-        print("\nМеню:")
-        print("1 - Додати користувача")
-        print("2 - Видалити користувача")
-        print("3 - Аутентифікувати користувача")
-        print("4 - Вихід")
-        
-        choice = input("Оберіть дію: ")
-        
-        try:
-            if choice == "1":
-                username = input("Введіть ім'я користувача: ")
-                password = input("Введіть пароль: ")
-                manager.add_user(username, password)
-            elif choice == "2":
-                username = input("Введіть ім'я користувача: ")
-                manager.remove_user(username)
-            elif choice == "3":
-                username = input("Введіть ім'я користувача: ")
-                password = input("Введіть пароль: ")
-                manager.authenticate(username, password)
-            elif choice == "4":
-                break
-            else:
-                print("Невірний вибір. Спробуйте ще раз.")
-        except (UserRegistrationError, UserNotFoundError, MaxUsersError, AuthenticationError) as e:
-            print(f"Помилка: {e}")
-
-if __name__ == "__main__":
-    main()
+    private static void authenticateUser(Scanner scanner) {
+        System.out.print("Введіть ім'я користувача: ");
+        String username = scanner.nextLine();
+        System.out.print("Введіть пароль: ");
+        String password = scanner.nextLine();
+        for (int i = 0; i < userCount; i++) {
+            if (usernames[i].equals(username) && passwords[i].equals(password)) {
+                System.out.println("Аутентифікація успішна.");
+                return;
+            }
+        }
+        System.out.println("Помилка: неправильне ім'я користувача або пароль.");
+    }
+}
