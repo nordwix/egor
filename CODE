@@ -1,115 +1,199 @@
+import java.io.*;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.Scanner;
 
-public class AuthenticationSystem {
-    private static final int MAX_USERS = 15;
-    private static final String[] forbiddenPasswords = {"admin", "pass", "password", "qwerty", "ytrewq"};
-    private static final String[] bannedPasswords = new String[50];
-    private static String[] usernames = new String[MAX_USERS];
-    private static String[] passwords = new String[MAX_USERS];
-    private static int userCount = 0;
-    private static int bannedCount = 0;
-    
+public class TicTacToe {
     public static void main(String[] args) {
-        Scanner scanner = new Scanner(System.in);
+        Settings.loadSettings();
+        Scanner sc = new Scanner(System.in);
         while (true) {
-            System.out.println("\n=== Меню ===");
-            System.out.println("1 - Додати користувача");
-            System.out.println("2 - Видалити користувача");
-            System.out.println("3 - Виконати дію від користувача");
-            System.out.println("4 - Вийти");
-            System.out.print("Виберіть дію: ");
-            int choice = scanner.nextInt();
-            scanner.nextLine(); 
-            switch (choice) {
-                case 1 -> registerUser(scanner);
-                case 2 -> deleteUser(scanner);
-                case 3 -> authenticateUser(scanner);
-                case 4 -> {
-                    System.out.println("Вихід із програми...");
-                    scanner.close();
-                    return;
+            System.out.println("\nМеню:");
+            System.out.println("1. Нова гра");
+            System.out.println("2. Налаштування");
+            System.out.println("3. Показати статистику");
+            System.out.println("4. Вихід");
+            System.out.print("Ваш вибір: ");
+            String choice = sc.nextLine();
+
+            if (choice.equals("1")) {
+                Game.playGame();
+            } else if (choice.equals("2")) {
+                Settings.configureSettings();
+            } else if (choice.equals("3")) {
+                Statistics.showStatistics();
+            } else if (choice.equals("4")) {
+                break;
+            } else {
+                System.out.println("Невірний вибір.");
+            }
+        }
+    }
+}
+
+class Settings {
+    public static int boardSize = 3;
+    public static String player1 = "Player1";
+    public static String player2 = "Player2";
+
+    public static void loadSettings() {
+        try {
+            File file = new File("settings.txt");
+            if (!file.exists()) return;
+
+            Scanner sc = new Scanner(file);
+            boardSize = Integer.parseInt(sc.nextLine());
+            player1 = sc.nextLine();
+            player2 = sc.nextLine();
+            sc.close();
+        } catch (Exception e) {
+            System.out.println("Помилка читання налаштувань.");
+        }
+    }
+
+    public static void saveSettings() {
+        try {
+            FileWriter writer = new FileWriter("settings.txt");
+            writer.write(boardSize + "\n");
+            writer.write(player1 + "\n");
+            writer.write(player2 + "\n");
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("Помилка збереження налаштувань.");
+        }
+    }
+
+    public static void configureSettings() {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Введіть розмір поля (3-9): ");
+        boardSize = Integer.parseInt(sc.nextLine());
+        System.out.print("Ім'я першого гравця: ");
+        player1 = sc.nextLine();
+        System.out.print("Ім'я другого гравця: ");
+        player2 = sc.nextLine();
+        saveSettings();
+    }
+}
+
+class Statistics {
+    public static void saveGameResult(String winner, int size) {
+        try {
+            FileWriter writer = new FileWriter("stats.txt", true);
+            String time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date());
+            writer.write(time + "\n");
+            writer.write(Settings.player1 + " (X) vs " + Settings.player2 + " (O)\n");
+            writer.write("Переможець: " + winner + "\n");
+            writer.write("Розмір поля: " + size + "\n");
+            writer.write("---\n");
+            writer.close();
+        } catch (IOException e) {
+            System.out.println("Помилка збереження статистики.");
+        }
+    }
+
+    public static void showStatistics() {
+        try {
+            File file = new File("stats.txt");
+            if (!file.exists()) {
+                System.out.println("Немає збереженої статистики.");
+                return;
+            }
+
+            Scanner sc = new Scanner(file);
+            while (sc.hasNextLine()) {
+                System.out.println(sc.nextLine());
+            }
+            sc.close();
+        } catch (IOException e) {
+            System.out.println("Помилка читання статистики.");
+        }
+    }
+}
+
+class Game {
+    public static void playGame() {
+        int size = Settings.boardSize;
+        char[][] board = new char[size][size];
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                board[i][j] = ' ';
+            }
+        }
+
+        Scanner sc = new Scanner(System.in);
+        char currentPlayer = 'X';
+        String currentName = Settings.player1;
+        int totalMoves = 0;
+        boolean gameOver = false;
+
+        while (!gameOver && totalMoves < size * size) {
+            printBoard(board);
+            System.out.println(currentName + " (" + currentPlayer + ") - введіть рядок і стовпець (від 1):");
+            int row = sc.nextInt() - 1;
+            int col = sc.nextInt() - 1;
+
+            if (row < 0 || row >= size || col < 0 || col >= size || board[row][col] != ' ') {
+                System.out.println("Невірний хід. Спробуйте ще раз.");
+                continue;
+            }
+
+            board[row][col] = currentPlayer;
+            totalMoves++;
+
+            if (checkWin(board, currentPlayer)) {
+                printBoard(board);
+                System.out.println("Переміг: " + currentName);
+                Statistics.saveGameResult(currentName, size);
+                gameOver = true;
+            } else {
+                currentPlayer = (currentPlayer == 'X') ? 'O' : 'X';
+                currentName = (currentPlayer == 'X') ? Settings.player1 : Settings.player2;
+            }
+        }
+
+        if (!gameOver) {
+            printBoard(board);
+            System.out.println("Нічия!");
+            Statistics.saveGameResult("Нічия", size);
+        }
+    }
+
+    private static void printBoard(char[][] board) {
+        int size = board.length;
+        for (int i = 0; i < size; i++) {
+            for (int j = 0; j < size; j++) {
+                System.out.print(" " + board[i][j] + " ");
+                if (j < size - 1) System.out.print("|");
+            }
+            System.out.println();
+            if (i < size - 1) {
+                for (int j = 0; j < size; j++) {
+                    System.out.print("---");
+                    if (j < size - 1) System.out.print("+");
                 }
-                default -> System.out.println("Невірний вибір. Спробуйте ще раз.");
+                System.out.println();
             }
         }
     }
-    
-    private static void registerUser(Scanner scanner) {
-        if (userCount == MAX_USERS) {
-            System.out.println("Помилка: максимальна кількість користувачів досягнута.");
-            return;
-        }
-        System.out.print("Введіть ім'я користувача (мінімум 3 символи, без пробілів): ");
-        String username = scanner.nextLine();
-        if (username.length() < 3 || username.contains(" ")) {
-            System.out.println("Помилка: ім'я користувача має містити мінімум 3 символи та не мати пробілів.");
-            return;
-        }
-        for (String existingUsername : usernames) {
-            if (username.equals(existingUsername)) {
-                System.out.println("Помилка: таке ім'я користувача вже існує.");
-                return;
+
+    private static boolean checkWin(char[][] board, char symbol) {
+        int size = board.length;
+
+        for (int i = 0; i < size; i++) {
+            boolean rowWin = true;
+            boolean colWin = true;
+            for (int j = 0; j < size; j++) {
+                if (board[i][j] != symbol) rowWin = false;
+                if (board[j][i] != symbol) colWin = false;
             }
+            if (rowWin || colWin) return true;
         }
-        System.out.print("Введіть пароль (мінімум 10 символів, латиниця, спецсимволи, цифри, без пробілів): ");
-        String password = scanner.nextLine();
-        if (!isValidPassword(password)) {
-            System.out.println("Помилка: невірний формат пароля.");
-            return;
+
+        boolean mainDiag = true, antiDiag = true;
+        for (int i = 0; i < size; i++) {
+            if (board[i][i] != symbol) mainDiag = false;
+            if (board[i][size - i - 1] != symbol) antiDiag = false;
         }
-        usernames[userCount] = username;
-        passwords[userCount] = password;
-        userCount++;
-        System.out.println("Користувач успішно доданий.");
-    }
-    
-    private static boolean isValidPassword(String password) {
-        if (password.length() < 10 || password.contains(" ")) return false;
-        boolean hasSpecial = false, hasDigit = false;
-        int digitCount = 0;
-        for (char c : password.toCharArray()) {
-            if (Character.isLetterOrDigit(c)) {
-                if (Character.isDigit(c)) digitCount++;
-            } else hasSpecial = true;
-        }
-        if (!hasSpecial || digitCount < 3) return false;
-        for (String forbidden : forbiddenPasswords) {
-            if (password.toLowerCase().contains(forbidden)) return false;
-        }
-        for (String banned : bannedPasswords) {
-            if (banned != null && password.equals(banned)) return false;
-        }
-        return true;
-    }
-    
-    private static void deleteUser(Scanner scanner) {
-        System.out.print("Введіть ім'я користувача для видалення: ");
-        String username = scanner.nextLine();
-        for (int i = 0; i < userCount; i++) {
-            if (usernames[i].equals(username)) {
-                usernames[i] = usernames[userCount - 1];
-                passwords[i] = passwords[userCount - 1];
-                usernames[userCount - 1] = null;
-                passwords[userCount - 1] = null;
-                userCount--;
-                System.out.println("Користувач успішно видалений.");
-                return;
-            }
-        }
-        System.out.println("Помилка: користувача з таким ім'ям не знайдено.");
-    }
-    
-    private static void authenticateUser(Scanner scanner) {
-        System.out.print("Введіть ім'я користувача: ");
-        String username = scanner.nextLine();
-        System.out.print("Введіть пароль: ");
-        String password = scanner.nextLine();
-        for (int i = 0; i < userCount; i++) {
-            if (usernames[i].equals(username) && passwords[i].equals(password)) {
-                System.out.println("Аутентифікація успішна.");
-                return;
-            }
-        }
-        System.out.println("Помилка: неправильне ім'я користувача або пароль.");
+        return mainDiag || antiDiag;
     }
 }
